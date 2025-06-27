@@ -145,6 +145,9 @@ class production_sequence:
     def __init__(self, productions:list[production]):
         self.productions: list[production] = productions
 
+    def __str__(self) -> str:
+        return '\n\n'.join(map(str, self.productions))
+
     def __add__(self, other:production|production_sequence) -> production_sequence:
         if isinstance(other, production):
             self.productions.append(other)
