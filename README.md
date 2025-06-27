@@ -301,7 +301,7 @@ Since they function like normal operators in python, they parentheses can be use
 
 Rules in LISP-like and class notation can be combined without any problem (because the LISP-like notation also returns object of type `rule_`).
 
-##### creating productions
+##### Creating productions
 
 Productions in ACT-R consist of a left- and a right-hand-side – each consisting of one or more rules – separated by the `==>` symbol. In the object-oriented python syntax, this symbol must be replaced with an already existing python operator. Simply due to the highest visual resemblance, the right-shift operator `>>` was chosen (see `__rshift__` method of `production_` for more on the implementation). Production can then be created as follows:
 
@@ -367,6 +367,60 @@ prod = (rule1 >> rule2).add_to_model()
 print(prod)
 ```
 
+##### Reusing rules & productions
+
+As the `+`, `>>`, and `+` operations for rules, rule sequences, productions, and production sequences always generate new object, they can be saved in a variable and used multiple times in other rule sequences, productions, or productions sequences without the original object changing -- see the following example:
+
+```python
+__my_rule_sequence_ =\
+(
+    rule1_ &
+    rule2_
+)
+
+__my_rule_sequence_ & rule2b
+
+my_production1 =\
+(
+    __my_rule_sequence_ &
+    rule3_
+    >>
+    rule4_
+)
+
+my_productions2 =\
+(
+    __my_rule_sequence_
+    >>
+    rule5_
+)
+
+# __my_rule_sequence_ is still in the state as defined in the beginning; my_production1 and my_production2 do not contain rule2b_
+```
+
+By using the walrus operator (`:=`), they can also be defined in-place (note: assignment must be enclosed in parentheses to limit scope):
+
+```python
+my_production1 =\
+(
+    (
+        __my_rule_sequence :=\
+        rule1_ &
+        rule2_
+    ) &
+    rule3_
+    >>
+    rule4_
+)
+
+my_production2 =\
+(
+    __my_rule_sequence_
+    >>
+    rule5_
+)
+```
+
 
 #### Chunks
 
@@ -394,12 +448,31 @@ An `AdvChunk` can be added to declarative memory with the `add_to_decmem` method
 AdvChunk(isa='goal', value='test').add_to_decmem(actr_model)
 ```
 
+For more specialized chunks that already specify certain properties / slots, those slots should be made available as class properties, for example, as follows:
+
+```python
+from pyactr_oo_syntax.base.chunk import AdvChunk
+from pyactr_oo_syntax.helpers.data_types import static_chunk_slot
+
+class SimpleGoalChunk(AdvChunk):
+    @static_chunk_slot
+    def isa(cls) -> str:
+        return 'goal'
+
+    def __init__(self, phase:str):
+        super().__init__(isa=SimpleGoalChunk.isa, phase=phase)
+
+```
+
+The definition of the property / slot uses `@static_chunk_slot` followed by a getter return the corresponding value directly instead of using a simple class variable `isa = 'goal'`, so it cannot be overwritten later.
+
 
 ### Tips on how to fully utilize this syntax
 
 - use enums to create own data types (like `MovementDirection`)
 - save rule sequences that are used in multiple productions as variables and use those variables for defining the respective productions
 - define own rule and chunk classes (use previously created enums and type annotations while doing so)
+- structure implementations by separating elements into several files, import productions and production sequences into a main file and only then add them to the model (make helper variables private, so they cannot be imported, which helps with decluttering auto-suggestions) 
 
 
 ## Some Notes
