@@ -103,3 +103,11 @@ class BufferExtraTest():
     class VisuallocationExtraTest(BufferQuery):
         ATTENDED = {'attended':True}
         NOT_ATTENDED = {'attended':False}
+
+
+class static_chunk_slot:
+    def __init__(self, getter):
+        self.getter = getter
+
+    def __get__(self, _, owner):
+        return self.getter(owner)
