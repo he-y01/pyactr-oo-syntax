@@ -4,6 +4,7 @@ Base implementation for rules, rule sequences, productions, and production seque
 
 from __future__ import annotations
 from typing import Callable
+from copy import copy
 from pyactr import ACTRModel
 
 from pyactr_oo_syntax.base.chunk import AdvChunk
@@ -14,30 +15,30 @@ from pyactr_oo_syntax.helpers.data_types import RuleType, Buffer
 
 class rule_():
     def __init__(self, rule_type:RuleType, buffer_name:Buffer|Callable[[str|None],str], imaginal_buffer_name:str|None=None, isa:str|None=None, **chunk_content):
-        self.rule_type:RuleType = rule_type
-        self.buffer:Buffer|str = buffer_name(imaginal_buffer_name) if isinstance(buffer_name, Callable) else buffer_name
-        self.content:AdvChunk|str|None = None
+        self.__rule_type:RuleType = rule_type
+        self.__buffer:Buffer|str = buffer_name(imaginal_buffer_name) if isinstance(buffer_name, Callable) else buffer_name
+        self.__content:AdvChunk|str|None = None
         if rule_type == RuleType.QUERY:
-            self.content = '\n'.join([f"{key} {value}" for key, value in chunk_content.items() if value != None])
+            self.__content = '\n'.join([f"{key} {value}" for key, value in chunk_content.items() if value != None])
         elif isa != None:
-            self.content = AdvChunk(isa, **chunk_content)
+            self.__content = AdvChunk(isa, **chunk_content)
 
     def __str__(self):
-        return f"{self.rule_type.value}{self.buffer.value if isinstance(self.buffer, Buffer) else self.buffer}>{'\n'+str(self.content) if self.content else ''}"
+        return f"{self.__rule_type.value}{self.__buffer.value if isinstance(self.__buffer, Buffer) else self.__buffer}>{'\n'+str(self.__content) if self.__content else ''}"
 
     def __and__(self, other:rule_|rule_sequence_) -> rule_sequence_:
         if isinstance(other, rule_):
-            return rule_sequence_(rules=[self, other])
+            return rule_sequence_(rules=[copy(self), copy(other)])
         elif isinstance(other, rule_sequence_):
-            return rule_sequence_(rules=[self]) & other
+            return rule_sequence_(rules=[copy(self)]) & other
         else:
             return NotImplemented
         
     def __rshift__(self, other:rule_|rule_sequence_) -> production:
         if isinstance(other, rule_):
-            return production(lhs=rule_sequence_(rules=[self]), rhs=rule_sequence_(rules=[other]))
+            return production(lhs=rule_sequence_(rules=[copy(self)]), rhs=rule_sequence_(rules=[copy(other)]))
         elif isinstance(other, rule_sequence_):
-            return production(lhs=rule_sequence_(rules=[self]), rhs=other)
+            return production(lhs=rule_sequence_(rules=[copy(self)]), rhs=copy(other))
         else:
             return NotImplemented
 
@@ -51,19 +52,21 @@ class rule_sequence_():
 
     def __and__(self, other:rule_|rule_sequence_) -> rule_sequence_:
         if isinstance(other, rule_):
-            self.rules.append(other)
-            return self
+            new_rules = copy(self.rules)
+            new_rules.append(other)
+            return rule_sequence_(rules=new_rules)
         elif isinstance(other, rule_sequence_):
-            self.rules.extend(other.rules)
-            return self
+            new_rules = copy(self.rules)
+            new_rules.extend(other.rules)
+            return rule_sequence_(rules=new_rules)
         else:
             return NotImplemented
 
     def __rshift__(self, other:rule_|rule_sequence_) -> production:
         if isinstance(other, rule_):
-            return production(lhs=self, rhs=rule_sequence_(rules=[other]))
+            return production(lhs=copy(self), rhs=rule_sequence_(rules=[copy(other)]))
         elif isinstance(other, rule_sequence_):
-            return production(lhs=self, rhs=other)
+            return production(lhs=copy(self), rhs=copy(other))
         else:
             return NotImplemented
 
@@ -81,17 +84,17 @@ class production:
     
     def __and__(self, other:rule_|rule_sequence_) -> production:
         if isinstance(other, rule_):
-            return production(lhs=self.__lhs, rhs=self.__rhs & rule_sequence_(rules=[other]))
+            return production(lhs=copy(self.__lhs), rhs=self.__rhs & rule_sequence_(rules=[copy(other)]))
         elif isinstance(other, rule_sequence_):
-            return production(lhs=self.__lhs, rhs=self.__rhs & other)
+            return production(lhs=copy(self.__lhs), rhs=self.__rhs & other)
         else:
             return NotImplemented
 
     def __rand__(self, other:rule_|rule_sequence_) -> production:
         if isinstance(other, rule_):
-            return production(lhs=rule_sequence_(rules=[other]) & self.__lhs, rhs=self.__rhs)
+            return production(lhs=rule_sequence_(rules=[copy(other)]) & self.__lhs, rhs=copy(self.__rhs))
         elif isinstance(other, rule_sequence_):
-            return production(lhs=other & self.__lhs, rhs=self.__rhs)
+            return production(lhs=other & self.__lhs, rhs=copy(self.__rhs))
         else:
             return NotImplemented
         
@@ -100,7 +103,7 @@ class production:
     
     def __add__(self, other:production|production_sequence) -> production_sequence:
         if isinstance(other, production):
-            return production_sequence(productions=[self, other])
+            return production_sequence(productions=[copy(self), copy(other)])
         else:
             return NotImplemented
 
@@ -150,18 +153,21 @@ class production_sequence:
 
     def __add__(self, other:production|production_sequence) -> production_sequence:
         if isinstance(other, production):
-            self.productions.append(other)
-            return self
+            new_productions = copy(self.productions)
+            new_productions.append(other)
+            return production_sequence(productions=new_productions)
         elif isinstance(other, production_sequence):
-            self.productions.extend(other.productions)
-            return self
+            new_productions = copy(self.productions)
+            new_productions.extend(other.productions)
+            return production_sequence(productions=new_productions)
         else:
             return NotImplemented
         
     def __radd__(self, other:production|production_sequence) -> production_sequence:
         if isinstance(other, production):
-            self.productions.insert(0, other)
-            return self
+            new_productions = copy(self.productions)
+            new_productions.insert(0, other)
+            return production_sequence(productions=new_productions)
         elif isinstance(other, production_sequence):
             self.productions = other.productions + self.productions
             return self
