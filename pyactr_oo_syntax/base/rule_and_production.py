@@ -107,14 +107,17 @@ class production:
     def get_name(self) -> str|None:
         return self.__name
 
-    def set_name(self, name:str):
+    def set_name(self, name:str) -> production:
         self.__name = name
+        return self
 
-    def set_utility(self, utility:int):
+    def set_utility(self, utility:int) -> production:
         self.__utility = utility
+        return self
 
-    def set_reward(self, reward:float):
+    def set_reward(self, reward:float) -> production:
         self.__reward = reward
+        return self
 
     def add_to_model(self, model:ACTRModel, production_name:str|None=None, utility:int=0, reward:float|None=None) -> production:
         if production_name:
