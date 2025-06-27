@@ -3,7 +3,7 @@ Some predefined chunks for convenient use.
 """
 
 from pyactr_oo_syntax.base.chunk import AdvChunk
-from pyactr_oo_syntax.helpers.actr_data_types import static_chunk_slot
+from pyactr_oo_syntax.helpers.data_types import static_chunk_slot
 
 class SimpleGoalChunk(AdvChunk):
     @static_chunk_slot

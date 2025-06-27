@@ -7,7 +7,7 @@ from typing import Callable
 from pyactr import ACTRModel
 
 from pyactr_oo_syntax.base.chunk import AdvChunk
-from pyactr_oo_syntax.helpers.actr_data_types import RuleType, Buffer
+from pyactr_oo_syntax.helpers.data_types import RuleType, Buffer
 
 
 ## Foundation Classes: rule_, rule_sequence_, production, production_sequence ##

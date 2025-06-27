@@ -5,7 +5,7 @@ LISP-like notation for creating object-based rules and productions.
 from typing import Callable
 
 from pyactr_oo_syntax.base.rule_and_production import rule_
-from pyactr_oo_syntax.helpers.actr_data_types import Buffer, RuleType
+from pyactr_oo_syntax.helpers.data_types import Buffer, RuleType
 
 
 class p: # lisp ACT-R: +

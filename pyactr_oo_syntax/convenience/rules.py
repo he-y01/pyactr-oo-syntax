@@ -6,7 +6,7 @@ from typing import Callable
 
 from pyactr_oo_syntax.base.chunk import AdvChunk
 from pyactr_oo_syntax.base.rule_and_production import rule_
-from pyactr_oo_syntax.helpers.actr_data_types import Buffer, BufferQuery, RuleType
+from pyactr_oo_syntax.helpers.data_types import Buffer, BufferQuery, RuleType
 
 from pyactr_oo_syntax.convenience.chunks import SimpleGoalChunk, ManualChunk
 
